@@ -1,0 +1,18 @@
+{
+    "dashboard": {
+      "title": "Database Performance Dashboard",
+      "panels": [
+        {
+          "title": "Database Query Time",
+          "type": "graph",
+          "targets": [{ "expr": "rate(db_query_duration_seconds_sum[5m]) / rate(db_query_duration_seconds_count[5m])", "legendFormat": "Avg Query Time" }]
+        },
+        {
+          "title": "Slow Queries",
+          "type": "graph",
+          "targets": [{ "expr": "sum(rate(db_slow_queries_total[5m]))", "legendFormat": "Slow Queries" }]
+        }
+      ]
+    }
+  }
+  

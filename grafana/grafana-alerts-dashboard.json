@@ -1,0 +1,13 @@
+{
+    "dashboard": {
+      "title": "Alerts Dashboard",
+      "panels": [
+        {
+          "title": "Active Alerts",
+          "type": "table",
+          "targets": [{ "expr": "ALERTS{alertstate='firing'}", "legendFormat": "Alerts" }]
+        }
+      ]
+    }
+  }
+  

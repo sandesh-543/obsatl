@@ -1,0 +1,82 @@
+groups:
+  - name: api_alerts
+    rules:
+      # High Error Rate Alert
+      - alert: HighAPIErrorRate
+        expr: (sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m]))) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High API Error Rate"
+          description: "More than 5% of API requests are failing in the last 5 minutes."
+
+      # Slow Response Time Alert
+      - alert: HighLatency
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) > 2
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High API Latency"
+          description: "95th percentile request duration exceeds 2 seconds."
+
+      # Increased Request Rate (Possible Load Surge)
+      - alert: HighRequestRate
+        expr: sum(rate(http_requests_total[1m])) > 100
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High API Request Rate"
+          description: "More than 100 API requests per second detected."
+
+      # Database Query Time Too High
+      - alert: SlowDBQuery
+        expr: histogram_quantile(0.95, sum(rate(db_query_duration_seconds_bucket[5m])) by (le)) > 1
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Slow Database Queries"
+          description: "95th percentile query duration exceeds 1 second."
+
+      # Too Many 4xx Errors (Client Errors)
+      - alert: HighClientErrors
+        expr: (sum(rate(http_requests_total{status=~"4.."}[5m])) / sum(rate(http_requests_total[5m]))) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High Rate of Client Errors"
+          description: "More than 10% of requests are returning 4xx errors."
+
+      # CPU Usage Too High
+      - alert: HighCPUUsage
+        expr: (sum(rate(process_cpu_seconds_total[1m])) / sum(machine_cpu_cores)) > 0.8
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High CPU Usage"
+          description: "CPU usage has been over 80% for the last 2 minutes."
+
+      # Memory Usage Too High
+      - alert: HighMemoryUsage
+        expr: (sum(node_memory_Active_bytes) / sum(node_memory_MemTotal_bytes)) > 0.85
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High Memory Usage"
+          description: "Memory usage has exceeded 85%."
+
+      # Database Connection Failures
+      - alert: DatabaseDown
+        expr: up{job="database"} == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Database Down"
+          description: "Database instance is unreachable."
