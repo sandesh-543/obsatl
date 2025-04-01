@@ -5,7 +5,9 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./grafana:/etc/grafana/provisioning/dashboards
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./grafana/json:/etc/grafana/provisioning/dashboards/json
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
 
@@ -15,24 +17,37 @@ services:
       - "9090:9090"
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus/alert-rules.yml:/etc/prometheus/alert-rules.yml
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
 
   loki:
-    image: grafana/loki
+    image: grafana/loki:2.8.0
     ports:
       - "3100:3100"
-    volumes:
-      - ./loki/loki-config.yml:/etc/loki/loki-config.yml
+    # No volumes or custom config
+    environment:
+      - JAEGER_AGENT_HOST=tempo
+      - JAEGER_ENDPOINT=http://tempo:14268/api/traces
+      - JAEGER_SAMPLER_TYPE=const
+      - JAEGER_SAMPLER_PARAM=1
 
   tempo:
-    image: grafana/tempo
+    image: grafana/tempo:latest
     ports:
       - "3200:3200"
+      - "4317:4317"  # OTLP gRPC
+      - "4318:4318"  # OTLP HTTP
+      - "14268:14268"  # Jaeger
     volumes:
-      - ./tempo/tempo-config.yml:/etc/tempo/tempo-config.yml
+      - ./tempo/tempo-config.yml:/etc/tempo/tempo-local.yaml
+    command: -config.file=/etc/tempo/tempo-local.yaml
 
   alertmanager:
     image: prom/alertmanager
     ports:
       - "9093:9093"
     volumes:
-      - ./prometheus/alert-rules.yml:/etc/alertmanager/alert-rules.yml
+      - ./prometheus/alertmanager.yml:/etc/alertmanager/config.yml
+    command:
+      - "--config.file=/etc/alertmanager/config.yml"
