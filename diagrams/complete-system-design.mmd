@@ -1,0 +1,39 @@
+flowchart TD
+    subgraph "User Layer"
+        U[Users] --> |API Requests| AG[API Gateway]
+    end
+
+    subgraph "Application Layer"
+        AG --> |Routes Requests| MS[Microservices]
+        MS --> |Queries| DB[(Databases)]
+        MS --> |Calls| EA[External APIs]
+    end
+
+    subgraph "Observability Layer: Data Collection"
+        MS --> |Logs| FB[Fluent Bit]
+        MS --> |Metrics| P[Prometheus]
+        MS --> |Traces| OT[OpenTelemetry Collector]
+        
+        FB --> |Forwards Logs| ES[(Elasticsearch)]
+        P --> |Scrapes Metrics| VM[(VictoriaMetrics)]
+        OT --> |Exports Traces| J[Jaeger]
+    end
+
+    subgraph "Observability Layer: Visualization & Alerting"
+        ES --> G[Grafana]
+        VM --> G
+        J --> G
+        
+        VM --> AM[AlertManager]
+        AM --> |Sends Alerts| N[Notification Systems]
+    end
+
+    subgraph "CI/CD & Management"
+        GH[GitHub Actions] --> |Triggers| AC[ArgoCD]
+        AC --> |Deploys| OC[Observability Components]
+        OC --> |Configures| FB
+        OC --> |Configures| P
+        OC --> |Configures| OT
+        OC --> |Configures| G
+        OC --> |Configures| AM
+    end

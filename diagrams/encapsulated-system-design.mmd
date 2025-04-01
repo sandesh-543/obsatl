@@ -1,0 +1,37 @@
+flowchart TD
+ subgraph subGraph0["User Layer"]
+        AG["API Gateway"]
+        U["Users"]
+  end
+ subgraph subGraph1["Application Layer"]
+        MS["Microservices"]
+        DB[("Databases")]
+        EA["External APIs"]
+  end
+ subgraph subGraph2["Observability Layer: Data Collection"]
+        FB["Fluent Bit"]
+        P["Prometheus"]
+        OT["OpenTelemetry Collector"]
+        ES[("Elasticsearch")]
+        VM[("VictoriaMetrics")]
+        J["Jaeger"]
+  end
+ subgraph subGraph3["Observability Layer: Visualization & Alerting"]
+        G["Grafana"]
+        AM["AlertManager"]
+        N["Notification Systems"]
+  end
+    U -- API Requests --> AG
+    AG -- Routes Requests --> MS
+    MS -- Queries --> DB
+    MS -- Calls --> EA
+    MS -- Logs --> FB
+    MS -- Metrics --> P
+    MS -- Traces --> OT
+    FB -- Forwards Logs --> ES
+    P -- Scrapes Metrics --> VM
+    OT -- Exports Traces --> J
+    ES --> G
+    VM --> G & AM
+    J --> G
+    AM -- Sends Alerts --> N
